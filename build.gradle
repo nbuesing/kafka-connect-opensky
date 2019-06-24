@@ -1,0 +1,77 @@
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+}
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'jacoco'
+
+tasks.build.dependsOn tasks.shadowJar
+
+
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url "http://packages.confluent.io/maven/"
+    }
+}
+
+dependencies {
+
+    compile group: 'org.opensky', name: 'opensky-api', version: opensky_version
+
+    compile group: 'org.apache.commons', name: 'commons-text', version: commons_text_version
+
+    compile group: 'org.apache.kafka', name: 'connect-runtime', version: kafka_version
+    compile group: 'org.apache.kafka', name: 'connect-api', version: kafka_version
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
+
+    testCompileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
+    testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
+
+    testCompile group: 'junit', name: 'junit', version: junit_version
+    testCompile group: 'org.spockframework', name: 'spock-core', version: spockframework_version
+
+}
+
+
+shadowJar() {
+
+    destinationDir = file("$rootDir/build/connect")
+
+    dependencies {
+        // exclude dependencies provided in the kafka connect classpath
+        exclude dependency("org.apache.kafka:connect-api:$kafka_version")
+        exclude dependency("org.apache.kafka:kafka-clients:$kafka_version")
+        exclude dependency('net.jpountz.lz4:.*:.*')
+        exclude dependency('org.xerial.snappy:.*:.*')
+        exclude dependency('org.slf4j:.*:.*')
+    }
+}
+
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = compileJava.destinationDir
+        testOutputDir = compileTestJava.destinationDir
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = false
+        csv.enabled = false
+        html.destination file("${buildDir}/reports/jacoco/html")
+    }
+}
