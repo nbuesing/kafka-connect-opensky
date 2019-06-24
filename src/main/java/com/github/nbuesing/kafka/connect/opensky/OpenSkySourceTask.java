@@ -49,7 +49,7 @@ public class OpenSkySourceTask extends SourceTask {
         queue = new LinkedBlockingQueue<>();
         topic = config.getTopic();
 
-        config.getInterval().ifPresent(value -> interval = value);
+        config.getInterval().ifPresent(value -> interval = value * 1000L);
 
         config.getOpenskyUsername().ifPresent(value -> {
                     username = value;
@@ -89,7 +89,7 @@ public class OpenSkySourceTask extends SourceTask {
 
             os.getStates().forEach(vector -> {
 
-                String icao24 = vector.getIcao24().trim();
+                final String icao24 = vector.getIcao24().trim();
 
                 // we are assuming that open-sky doesn't have "late arriving data" so we do not need to keep
                 // offsets for each flight, just the "max offset".
@@ -99,19 +99,22 @@ public class OpenSkySourceTask extends SourceTask {
                     maxTimestamp = timestamp;
                 }
 
-                if (timestamp > lastTimestamp && vector.getIcao24() != null) {
+                if (timestamp > lastTimestamp
+                        && vector.getLatitude() != null
+                        && vector.getLongitude() != null
+                ) {
 
-                    Struct message = StateVectorConverter.convert(vector);
+                    final Struct struct = StateVectorConverter.convert(vector);
 
                     try {
-                        message.validate();
+                        struct.validate();
 
                         log.debug("aircraft transponder={}, timestamp={}", icao24, timestamp);
 
-                        SourceRecord record = new SourceRecord(null, null, topic, null, StateVectorConverter.SCHEMA_KEY, vector.getIcao24().trim(), StateVectorConverter.SCHEMA, message, timestamp);
+                        SourceRecord record = new SourceRecord(null, null, topic, null, StateVectorConverter.SCHEMA_KEY, vector.getIcao24().trim(), StateVectorConverter.SCHEMA, struct, timestamp);
                         queue.offer(record);
                     } catch (DataException e) {
-                        log.error("invalid aircraft data message={}, ignoring", message);
+                        log.error("invalid aircraft data message={}, ignoring", struct);
                     }
 
                 } else {
@@ -121,9 +124,9 @@ public class OpenSkySourceTask extends SourceTask {
 
             lastTimestamp = maxTimestamp;
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.warn("exception reading from Opensky, ignoring and will try again.", e);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             log.warn("runtime exception reading from Opensky, ignoring and will try again.", e);
         }
     }
