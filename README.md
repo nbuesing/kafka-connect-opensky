@@ -1,4 +1,11 @@
 
+#
+
+The opensky API library is GPLv3, I am in the process of writing my own Feign based RESTful call to their endpoints.
+
+The use of the connector has to follow the OpenSky terms and conditions for usage of their API, but the connector with the
+modification will be able to be under the Apache 2 licensing correctly.
+
 # OpenSky Source Connector
 
 The OpenSky Source Connector provides a way to inject OpenSky Network into an Apache Kafka Cluster.
