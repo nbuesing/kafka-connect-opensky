@@ -1,14 +1,16 @@
 package com.github.nbuesing.kafka.connect.opensky;
 
-import com.github.nbuesing.kafka.connect.opensky.converter.StateVectorConverter;
+import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox;
+import com.github.nbuesing.kafka.connect.opensky.api.OpenSky;
+import com.github.nbuesing.kafka.connect.opensky.api.Record;
+import com.github.nbuesing.kafka.connect.opensky.api.Records;
+import com.github.nbuesing.kafka.connect.opensky.converter.RecordConverter;
 import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
-import org.opensky.api.OpenSkyApi;
-import org.opensky.model.OpenSkyStates;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -32,9 +34,9 @@ public class OpenSkySourceTask extends SourceTask {
 
     private boolean first = true;
 
-    private OpenSkyApi api;
+    private OpenSky openSky;
 
-    private List<OpenSkyApi.BoundingBox> boundingBoxes;
+    private List<BoundingBox> boundingBoxes;
 
     @Override
     public String version() {
@@ -57,7 +59,7 @@ public class OpenSkySourceTask extends SourceTask {
                 }
         );
 
-        api = new OpenSkyApi(username, password);
+        openSky = new OpenSky(username, password);
 
         boundingBoxes = config.getBoundingBoxes();
     }
@@ -66,21 +68,23 @@ public class OpenSkySourceTask extends SourceTask {
         boundingBoxes.forEach(this::getStates);
     }
 
-    private void getStates(final OpenSkyApi.BoundingBox boundingBox) {
+    private void getStates(final BoundingBox boundingBox) {
         try {
 
             // opensky will apply the world filter, which might cause it to be less performant, so if world box
             // is indeed provided, use null instead.
-            OpenSkyStates os = api.getStates(0, null, BoundingBoxUtil.isWorld(boundingBox) ? null : boundingBox);
+            //OpenSkyStates os = openSky.getStates(0, null, BoundingBoxUtil.isWorld(boundingBox) ? null : boundingBox);
+            Records os = openSky.getAircrafts(boundingBox);
 
             if (os == null) {
                 log.warn("unable to make request, if you have more than 1 task running you need to have an account that allows for it.");
-                return;
+                //return;
+                throw new RuntimeException("TODO");
             }
 
-            int size = (os.getStates() != null) ? os.getStates().size() : 0;
+            //int size = (os.getStates() != null) ? os.getStates().size() : 0;
 
-            log.info("Processing timestamp={}, numRecords={}, boundingBox={}", os.getTime(), size, BoundingBoxUtil.toString(boundingBox));
+            log.info("Processing timestamp={}, numRecords={}, boundingBox={}", os.getTime(), os.getStates().size(), BoundingBoxUtil.toString(boundingBox));
 
             maxTimestamp = 0L;
 
@@ -89,7 +93,7 @@ public class OpenSkySourceTask extends SourceTask {
 
             os.getStates().forEach(vector -> {
 
-                final String icao24 = vector.getIcao24().trim();
+                final String icao24 = vector.getIcao24();
 
                 // we are assuming that open-sky doesn't have "late arriving data" so we do not need to keep
                 // offsets for each flight, just the "max offset".
@@ -104,14 +108,14 @@ public class OpenSkySourceTask extends SourceTask {
                         && vector.getLongitude() != null
                 ) {
 
-                    final Struct struct = StateVectorConverter.convert(vector);
+                    final Struct struct = RecordConverter.convert(vector);
 
                     try {
                         struct.validate();
 
                         log.debug("aircraft transponder={}, timestamp={}", icao24, timestamp);
 
-                        SourceRecord record = new SourceRecord(null, null, topic, null, StateVectorConverter.SCHEMA_KEY, vector.getIcao24().trim(), StateVectorConverter.SCHEMA, struct, timestamp);
+                        SourceRecord record = new SourceRecord(null, null, topic, null, RecordConverter.SCHEMA_KEY, vector.getIcao24().trim(), RecordConverter.SCHEMA, struct, timestamp);
                         queue.offer(record);
                     } catch (DataException e) {
                         log.error("invalid aircraft data message={}, ignoring", struct);
@@ -126,8 +130,10 @@ public class OpenSkySourceTask extends SourceTask {
 
         } catch (final IOException e) {
             log.warn("exception reading from Opensky, ignoring and will try again.", e);
+            first = false;
         } catch (final RuntimeException e) {
             log.warn("runtime exception reading from Opensky, ignoring and will try again.", e);
+            first = false;
         }
     }
 

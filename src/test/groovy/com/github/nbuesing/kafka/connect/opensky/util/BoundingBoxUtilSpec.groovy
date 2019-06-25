@@ -1,7 +1,8 @@
 package com.github.nbuesing.kafka.connect.opensky.util
 
+import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox
 import org.apache.kafka.common.config.ConfigException
-import org.opensky.api.OpenSkyApi
+//import org.opensky.api.OpenSkyApi
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -35,7 +36,7 @@ class BoundingBoxUtilSpec extends Specification {
     def 'conversion : #property'() {
 
         when:
-        OpenSkyApi.BoundingBox boundingBox = BoundingBoxUtil.toBoundingBox(property)
+        BoundingBox boundingBox = BoundingBoxUtil.toBoundingBox(property)
         String string = BoundingBoxUtil.toString(boundingBox)
 
         then:

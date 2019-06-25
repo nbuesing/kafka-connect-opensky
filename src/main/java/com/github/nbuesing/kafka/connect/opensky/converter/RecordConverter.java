@@ -1,19 +1,19 @@
 package com.github.nbuesing.kafka.connect.opensky.converter;
 
 
+import com.github.nbuesing.kafka.connect.opensky.api.Record;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.data.Timestamp;
-import org.opensky.model.StateVector;
 
 import java.util.Date;
 
 import static com.github.nbuesing.kafka.connect.opensky.converter.StateVectorField.*;
 
-public final class StateVectorConverter {
+public final class RecordConverter {
 
-    private StateVectorConverter() {
+    private RecordConverter() {
     }
 
     public static final Schema SCHEMA_KEY = Schema.STRING_SCHEMA;
@@ -34,7 +34,7 @@ public final class StateVectorConverter {
             .field(CALL_SIGN.getField(), SchemaBuilder.string().optional().doc(CALL_SIGN.getDoc()).build())
             .field(ORIGIN_COUNTRY.getField(), SchemaBuilder.string().optional().doc(ORIGIN_COUNTRY.getDoc()).build())
             .field(LAST_POSITION_UPDATE.getField(), Timestamp.builder().optional().doc(LAST_POSITION_UPDATE.getDoc()).build())
-            .field(LAST_CONTACT.getField(), Timestamp.builder().optional().doc(LAST_POSITION_UPDATE.getDoc()).build())
+            .field(LAST_CONTACT.getField(), Timestamp.builder().optional().doc(LAST_CONTACT.getDoc()).build())
             .field(GEO_LOCATION.getField(), GEO_LOCATION_SCHEMA)
             .field(BARO_ALTITUDE.getField(), SchemaBuilder.float64().optional().doc(BARO_ALTITUDE.getDoc()).build())
             .field(ON_GROUND.getField(), SchemaBuilder.bool().optional().doc(ON_GROUND.getDoc()).build())
@@ -48,30 +48,31 @@ public final class StateVectorConverter {
             .field(POSITION_SOURCE.getField(), SchemaBuilder.string().optional().doc(POSITION_SOURCE.getDoc()).build())
             .build();
 
-    public static Struct convert(final StateVector stateVector) {
+
+    public static Struct convert(final Record record) {
 
         final Struct struct = new Struct(SCHEMA);
 
-        struct.put(IACO24.getField(), stateVector.getIcao24().trim());
-        struct.put(CALL_SIGN.getField(), stateVector.getCallsign() != null ? stateVector.getCallsign().trim() : null);
-        struct.put(ORIGIN_COUNTRY.getField(), stateVector.getOriginCountry());
-        struct.put(LAST_POSITION_UPDATE.getField(), fromEpoc(stateVector.getLastPositionUpdate()));
-        struct.put(LAST_CONTACT.getField(), fromEpoc(stateVector.getLastContact()));
-        struct.put(ORIGIN_COUNTRY.getField(), stateVector.getOriginCountry());
+        struct.put(IACO24.getField(), record.getIcao24());
+        struct.put(CALL_SIGN.getField(), record.getCallSign());
+        struct.put(ORIGIN_COUNTRY.getField(), record.getOriginCountry());
+        struct.put(LAST_POSITION_UPDATE.getField(), fromEpoc(record.getTimePosition()));
+        struct.put(LAST_CONTACT.getField(), fromEpoc(record.getLastContact()));
+        struct.put(ORIGIN_COUNTRY.getField(), record.getOriginCountry());
         struct.put(GEO_LOCATION.getField(),
                 new Struct(GEO_LOCATION_SCHEMA)
-                        .put(LATITUDE.getField(), stateVector.getLatitude())
-                        .put(LONGITUDE.getField(), stateVector.getLongitude())
+                        .put(LATITUDE.getField(), record.getLatitude())
+                        .put(LONGITUDE.getField(), record.getLongitude())
         );
-        struct.put(BARO_ALTITUDE.getField(), stateVector.getBaroAltitude());
-        struct.put(ON_GROUND.getField(), stateVector.isOnGround());
-        struct.put(VELOCITY.getField(), stateVector.getVelocity());
-        struct.put(HEADING.getField(), stateVector.getHeading());
-        struct.put(VERTICAL_RATE.getField(), stateVector.getVerticalRate());
-        struct.put(GEO_ALTITUDE.getField(), stateVector.getGeoAltitude());
-        struct.put(SQUAWK.getField(), stateVector.getSquawk());
-        struct.put(SPI.getField(), stateVector.isSpi());
-        struct.put(POSITION_SOURCE.getField(), stateVector.getPositionSource() != null ? stateVector.getPositionSource().name() : null);
+        struct.put(BARO_ALTITUDE.getField(), record.getBaroAltitude());
+        struct.put(ON_GROUND.getField(), record.getOnGround());
+        struct.put(VELOCITY.getField(), record.getVelocity());
+        struct.put(HEADING.getField(), record.getTrueTrack());
+        struct.put(VERTICAL_RATE.getField(), record.getVerticalRate());
+        struct.put(GEO_ALTITUDE.getField(), record.getGeoAltitude());
+        struct.put(SQUAWK.getField(), record.getSquawk());
+        struct.put(SPI.getField(), record.getSpi());
+        struct.put(POSITION_SOURCE.getField(), record.getPositionSource() != null ? "" + record.getPositionSource() : null);
 
         return struct;
     }
@@ -79,7 +80,7 @@ public final class StateVectorConverter {
     /**
      * Convert the OpenSky's Epoc (seconds since 1970 in a double)
      */
-    private static Date fromEpoc(final Double value) {
-        return (value != null) ? new Date(value.longValue() * 1000L) : null;
+    private static Date fromEpoc(final Long value) {
+        return (value != null) ? new Date(value * 1000L) : null;
     }
 }

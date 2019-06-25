@@ -1,14 +1,16 @@
 package com.github.nbuesing.kafka.connect.opensky;
 
 
+import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox;
 import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil;
 import com.github.nbuesing.kafka.connect.opensky.util.Validators;
 import lombok.Getter;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
-import org.opensky.api.OpenSkyApi;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
@@ -45,7 +47,7 @@ public class OpenSkySourceConnectorConfig extends AbstractConfig {
         super(conf(), parsedConfig);
     }
 
-    public List<OpenSkyApi.BoundingBox> getBoundingBoxes() {
+    public List<BoundingBox> getBoundingBoxes() {
         return getList(BOUNDING_BOXES_CONF).stream().map(BoundingBoxUtil::toBoundingBox).collect(Collectors.toList());
     }
 

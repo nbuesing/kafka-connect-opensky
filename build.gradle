@@ -22,12 +22,13 @@ repositories {
 
 dependencies {
 
-    compile group: 'org.opensky', name: 'opensky-api', version: opensky_version
-
     compile group: 'org.apache.commons', name: 'commons-text', version: commons_text_version
 
     compile group: 'org.apache.kafka', name: 'connect-runtime', version: kafka_version
     compile group: 'org.apache.kafka', name: 'connect-api', version: kafka_version
+
+    compile group: 'com.squareup.retrofit2', name: 'retrofit', version: retrofit2_version
+    compile group: 'com.squareup.retrofit2', name: 'converter-jackson', version: retrofit2_version
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version

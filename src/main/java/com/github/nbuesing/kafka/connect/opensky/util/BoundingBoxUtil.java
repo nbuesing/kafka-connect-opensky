@@ -1,7 +1,7 @@
 package com.github.nbuesing.kafka.connect.opensky.util;
 
+import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox;
 import org.apache.kafka.common.config.ConfigException;
-import org.opensky.api.OpenSkyApi;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +15,7 @@ public final class BoundingBoxUtil {
     private BoundingBoxUtil() {
     }
 
-    public static boolean isWorld(final OpenSkyApi.BoundingBox boundingBox) {
+    public static boolean isWorld(final BoundingBox boundingBox) {
         return boundingBox.getMinLatitude() == -90.0
                 && boundingBox.getMaxLatitude() == 90.0
                 && boundingBox.getMinLongitude() == -180.0
@@ -52,7 +52,7 @@ public final class BoundingBoxUtil {
      * allowing runtime exceptions of OpenSky API to be returned, as they would be
      * due to a program error not properly validating the coodinates at startup.
      */
-    public static OpenSkyApi.BoundingBox toBoundingBox(final String string) {
+    public static BoundingBox toBoundingBox(final String string) {
 
         Matcher matcher = BOUNDING_BOX_PATTERN.matcher(string);
 
@@ -60,7 +60,7 @@ public final class BoundingBoxUtil {
             throw new RuntimeException("invalid bounding box string, string=" + string);
         }
 
-        return new OpenSkyApi.BoundingBox(
+        return new BoundingBox(
                 Double.parseDouble(matcher.group(1)),
                 Double.parseDouble(matcher.group(2)),
                 Double.parseDouble(matcher.group(3)),
@@ -71,7 +71,7 @@ public final class BoundingBoxUtil {
     /**
      * Turn a BoundingBox back into the string representation used in configuration files.
      */
-    public static String toString(OpenSkyApi.BoundingBox boundingBox) {
+    public static String toString(BoundingBox boundingBox) {
         return new StringBuilder()
                 .append(boundingBox.getMinLatitude())
                 .append(" ")
