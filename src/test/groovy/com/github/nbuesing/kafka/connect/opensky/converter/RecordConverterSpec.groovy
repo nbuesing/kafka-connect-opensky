@@ -34,8 +34,8 @@ class RecordConverterSpec extends Specification {
         Struct struct = RecordConverter.convert(stateVector)
 
         then:
-        assert struct.get('icao24') == 'ICAO24'
-        assert struct.get('callSign') == 'CALLSIGN'
+        assert struct.get('id') == 'ICAO24'
+        assert struct.get('callsign') == 'CALLSIGN'
         assert (struct.get('location') as Struct).get('latitude') == 81.23
         assert (struct.get('location') as Struct).get('longitude') == 145.67
         assert struct.get('originCountry') == 'USA'
@@ -63,8 +63,8 @@ class RecordConverterSpec extends Specification {
         Struct struct = RecordConverter.convert(stateVector)
 
         then:
-        assert struct.get('icao24') == 'ICAO24'
-        assert struct.get('callSign') == null
+        assert struct.get('id') == 'ICAO24'
+        assert struct.get('callsign') == null
         assert (struct.get('location') as Struct).get('latitude') == 12.34
         assert (struct.get('location') as Struct).get('longitude') == 167.89
         assert struct.get('originCountry') == null

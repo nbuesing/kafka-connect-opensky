@@ -51,7 +51,7 @@ public class OpenSkySourceConnector extends SourceConnector {
             Map<String, String> config = new HashMap<>(settings);
 
             if (!workUnit.isEmpty()) {
-                config.put(OpenSkySourceConnectorConfig.BOUNDING_BOXES_CONF, Joiner.on(',').join(workUnit));
+                config.put(OpenSkySourceConnectorConfig.BOUNDING_BOXES_CONF, String.join(",", workUnit));
                 configs.add(config);
             }
         }

@@ -30,7 +30,7 @@ public final class RecordConverter {
             .name("com.github.nbuesing.kafka.kafka.connect.opensky.OpenSky")
             .version(1)
             .field(IACO24.field(), IACO24.schema())
-            .field(CALL_SIGN.field(), CALL_SIGN.schema())
+            .field(CALLSIGN.field(), CALLSIGN.schema())
             .field(ORIGIN_COUNTRY.field(), ORIGIN_COUNTRY.schema())
             .field(LAST_POSITION_UPDATE.field(), LAST_POSITION_UPDATE.schema())
             .field(LAST_CONTACT.field(), LAST_CONTACT.schema())
@@ -53,7 +53,7 @@ public final class RecordConverter {
         final Struct struct = new Struct(SCHEMA);
 
         struct.put(IACO24.field(), record.getIcao24());
-        struct.put(CALL_SIGN.field(), record.getCallSign());
+        struct.put(CALLSIGN.field(), record.getCallSign());
         struct.put(ORIGIN_COUNTRY.field(), record.getOriginCountry());
         struct.put(LAST_POSITION_UPDATE.field(), fromEpoc(record.getTimePosition()));
         struct.put(LAST_CONTACT.field(), fromEpoc(record.getLastContact()));

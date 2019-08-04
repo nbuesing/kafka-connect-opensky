@@ -2,8 +2,10 @@ package com.github.nbuesing.kafka.connect.opensky.util
 
 import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox
 import org.apache.kafka.common.config.ConfigException
-//import org.opensky.api.OpenSkyApi
 import spock.lang.Specification
+
+//import org.opensky.api.OpenSkyApi
+
 import spock.lang.Unroll
 
 @Unroll

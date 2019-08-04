@@ -2,11 +2,11 @@ package com.github.nbuesing.kafka.connect.opensky;
 
 import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox;
 import com.github.nbuesing.kafka.connect.opensky.api.OpenSky;
-import com.github.nbuesing.kafka.connect.opensky.api.Record;
 import com.github.nbuesing.kafka.connect.opensky.api.Records;
 import com.github.nbuesing.kafka.connect.opensky.converter.RecordConverter;
 import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -29,6 +29,7 @@ public class OpenSkySourceTask extends SourceTask {
     private long maxTimestamp;
 
     private long interval;
+    private String url;
     private String username = null;
     private String password = null;
 
@@ -50,6 +51,11 @@ public class OpenSkySourceTask extends SourceTask {
 
         queue = new LinkedBlockingQueue<>();
         topic = config.getTopic();
+        url = config.getOpenskyUrl();
+
+        if (StringUtils.isNotBlank(url) && !url.endsWith("/")) {
+            url += "/";
+        }
 
         config.getInterval().ifPresent(value -> interval = value * 1000L);
 
@@ -59,7 +65,7 @@ public class OpenSkySourceTask extends SourceTask {
                 }
         );
 
-        openSky = new OpenSky(username, password);
+        openSky = new OpenSky(url, username, password);
 
         boundingBoxes = config.getBoundingBoxes();
     }

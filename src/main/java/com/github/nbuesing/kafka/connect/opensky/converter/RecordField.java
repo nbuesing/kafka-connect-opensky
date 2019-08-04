@@ -7,8 +7,8 @@ import org.apache.kafka.connect.data.Timestamp;
 
 public enum RecordField {
 
-    IACO24("icao24", SchemaBuilder.string().doc("Unique ICAO 24-bit address of the transponder in hex string representation.").build()),
-    CALL_SIGN("callSign", SchemaBuilder.string().optional().doc("Callsign of the vehicle (8 chars). Can be null if no callsign has been received.").build()),
+    IACO24("id", SchemaBuilder.string().doc("Unique ICAO 24-bit address of the transponder in hex string representation.").build()),
+    CALLSIGN("callsign", SchemaBuilder.string().optional().doc("Callsign of the vehicle (8 chars). Can be null if no call-sign has been received.").build()),
     ORIGIN_COUNTRY("originCountry", SchemaBuilder.string().optional().doc("Country name inferred from the ICAO 24-bit address.").build()),
     LAST_POSITION_UPDATE("timePosition", Timestamp.builder().optional().doc("Unix timestamp (seconds) for the last position update. Can be null if no position report was received by OpenSky within the past 15s.").build()),
     LAST_CONTACT("lastContact", Timestamp.builder().optional().doc("Unix timestamp (seconds) for the last update in general. This field is updated for any new, valid message received from the transponder.").build()),
