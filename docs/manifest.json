@@ -19,7 +19,7 @@
     }
   ],
   "logo": "assets/opensky-logo.png",
-  "name": "opensky-source-connector",
+  "name": "@name@",
   "owner": {
     "logo": "assets/XXX-logo.png",
     "name": "Neil Buesing",
@@ -40,5 +40,5 @@
     "xxxx"
   ],
   "title": "OpenSky Source Connector",
-  "version": "${project.version}"
+  "version": "@version@"
 }
