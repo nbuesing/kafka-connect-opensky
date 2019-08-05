@@ -55,6 +55,13 @@ jacocoTestReport {
     }
 }
 
+task copy3rdPartyJars(type: Copy) {
+    from(configurations.runtimeClasspath)
+    from("build/libs/opensky-source-connector.jar")
+    into("build/connect/opensky") 
+}
+
+
 distributions {
 
     main {
