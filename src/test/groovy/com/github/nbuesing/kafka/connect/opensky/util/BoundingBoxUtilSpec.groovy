@@ -35,6 +35,18 @@ class BoundingBoxUtilSpec extends Specification {
         boundingBox << ['-91 90 -180 180', '1 0 0 0', '-1 1 -1 -2', '-1 1 -1', 'foo', '', null]
     }
 
+    def 'invalid bounding box'() {
+
+        when:
+        BoundingBoxUtil.toBoundingBox(property)
+
+        then:
+        thrown(RuntimeException)
+
+        where:
+        property << ['-90.0', 'a.0 0.0 0.0 0.0', '-1.0 1.0']
+    }
+
     def 'conversion : #property'() {
 
         when:

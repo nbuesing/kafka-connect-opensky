@@ -31,6 +31,7 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: junit_version
     testCompile group: 'org.spockframework', name: 'spock-core', version: spockframework_version
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: wiremock_version
 
     testCompile group: 'org.apache.kafka', name: 'connect-api', version: kafka_version
 }

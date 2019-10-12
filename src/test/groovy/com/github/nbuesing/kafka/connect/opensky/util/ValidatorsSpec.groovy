@@ -41,4 +41,44 @@ class ValidatorsSpec extends Specification {
                 ['-1 1 -1 -2']
         ]
     }
+
+
+    def 'validate successfully : #topic'() {
+
+        when:
+        Validators.validTopic.ensureValid('foo', topic)
+
+        then:
+        noExceptionThrown()
+
+        where:
+        topic << [
+                'a',
+                'a.b',
+                'a_b',
+                'a-b',
+                '_a',
+                '.a',
+                '-a',
+                'a6',
+                '6a'
+        ]
+    }
+
+    def 'validate unsuccessfully : #topic'() {
+
+        when:
+        Validators.validTopic.ensureValid('foo', topic)
+
+        then:
+        thrown(ConfigException)
+
+        where:
+        topic << [
+                null,
+                '',
+                '$',
+                'foo6%'
+        ]
+    }
 }

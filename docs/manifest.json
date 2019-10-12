@@ -2,7 +2,7 @@
   "component_types": [
     "source"
   ],
-  "description": "This connector gets data from OpenSky API into Kafka",
+  "description": "This connector gets data from OpenSky API (https://opensky-network.org) into Kafka",
   "documentation_url": "https://github.com/nbuesing/opensky-source-connector",
   "features": {
     "confluent_control_center_integration": false,
@@ -18,10 +18,8 @@
       "logo": "assets/apache-logo.png"
     }
   ],
-  "logo": "assets/opensky-logo.png",
   "name": "@name@",
   "owner": {
-    "logo": "assets/XXX-logo.png",
     "name": "Neil Buesing",
     "type": "user",
     "url": "https://github.com/nbuesing",
@@ -31,13 +29,12 @@
     "OpenSky API"
   ],
   "support": {
-    "logo": "assets/TODO-logo.png",
     "provider_name": "Neil Buesing",
     "summary": "This is a user supported connector, please report issues and pull-requests, if possible.",
-    "url": "https://github.com/nbuesing/opensky-source-connecttor/issues"
+    "url": "https://github.com/nbuesing/opensky-source-connector/issues"
   },
   "tags": [
-    "xxxx"
+    "opensky"
   ],
   "title": "OpenSky Source Connector",
   "version": "@version@"
