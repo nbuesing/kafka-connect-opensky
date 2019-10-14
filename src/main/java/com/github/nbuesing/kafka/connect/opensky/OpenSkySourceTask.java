@@ -13,20 +13,27 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class OpenSkySourceTask extends SourceTask {
 
+    private static final String BOUNDING_BOX = "boundingBox";
+    private static final String TIMESTAMP = "timestamp";
+
     private BlockingQueue<SourceRecord> queue = null;
     private String topic = null;
 
+
+    // epoc in seconds (not milliseconds)
     private long lastTimestamp;
-    private long maxTimestamp;
+    //private long maxTimestamp;
 
     private long interval;
     private String url;
@@ -75,6 +82,14 @@ public class OpenSkySourceTask extends SourceTask {
     }
 
     private void getStates(final BoundingBox boundingBox) {
+
+
+        final Map<String, String> sourcePartition = offsetKey(boundingBox);
+
+        final Map<String, Object> currentSourceOffset = context.offsetStorageReader().offset(sourcePartition);
+
+        lastTimestamp = getTimestamp(currentSourceOffset);
+
         try {
 
             // opensky will apply the world filter, which might cause it to be less performant, so if world box
@@ -88,51 +103,43 @@ public class OpenSkySourceTask extends SourceTask {
                 throw new RuntimeException("TODO");
             }
 
-            //int size = (os.getStates() != null) ? os.getStates().size() : 0;
+            final Map<String, Object> sourceOffset = offsetValue(os.getTime());
 
             log.info("Processing timestamp={}, numRecords={}, boundingBox={}", os.getTime(), os.getStates().size(), BoundingBoxUtil.toString(boundingBox));
 
-            maxTimestamp = 0L;
-
-            //TEMP
-            final long timestamp = System.currentTimeMillis();
+            AtomicInteger skipped = new AtomicInteger();
 
             os.getStates().forEach(vector -> {
 
                 final String icao24 = vector.getIcao24();
 
-                // we are assuming that open-sky doesn't have "late arriving data" so we do not need to keep
-                // offsets for each flight, just the "max offset".
-                // if such assumption was proven to be wrong, would keep track / flight
-                //   vector.getLastContact().longValue() * 1000L;
-                if (timestamp > maxTimestamp) {
-                    maxTimestamp = timestamp;
-                }
-
-                if (timestamp > lastTimestamp
+                if (vector.getLastContact() > lastTimestamp
                         && vector.getLatitude() != null
                         && vector.getLongitude() != null
                 ) {
+
+                    log.debug("aircraft icao24={}, timestamp={} updated, sending", icao24, vector.getLastContact());
 
                     final Struct struct = RecordConverter.convert(vector);
 
                     try {
                         struct.validate();
 
-                        log.debug("aircraft transponder={}, timestamp={}", icao24, timestamp);
+                        log.debug("aircraft transponder={}, timestamp={}", icao24, vector.getLastContact());
 
-                        SourceRecord record = new SourceRecord(null, null, topic, null, RecordConverter.SCHEMA_KEY, vector.getIcao24().trim(), RecordConverter.SCHEMA, struct, timestamp);
+                        SourceRecord record = new SourceRecord(sourcePartition, sourceOffset, topic, null, RecordConverter.SCHEMA_KEY, vector.getIcao24().trim(), RecordConverter.SCHEMA, struct, vector.getLastContact() * 1000L);
                         queue.offer(record);
                     } catch (DataException e) {
                         log.error("invalid aircraft data message={}, ignoring", struct);
                     }
 
                 } else {
-                    log.debug("aircraft {} not updated, skipping", icao24);
+                    skipped.incrementAndGet();
+                    log.debug("aircraft icao24={}, timestamp={} not updated, skipping", icao24, vector.getLastContact());
                 }
             });
 
-            lastTimestamp = maxTimestamp;
+            log.info("aircrafts fetched={}, skipped={}", os.getStates().size(), skipped.intValue());
 
         } catch (final IOException e) {
             log.warn("exception reading from Opensky, ignoring and will try again.", e);
@@ -174,5 +181,23 @@ public class OpenSkySourceTask extends SourceTask {
     @Override
     public void stop() {
         queue.clear();
+    }
+
+    private Map<String, String> offsetKey(BoundingBox boundingBox) {
+        return Collections.singletonMap(BOUNDING_BOX, BoundingBoxUtil.toString(boundingBox));
+    }
+
+    private Map<String, Object> offsetValue(final Integer timestamp) {
+        return Collections.singletonMap(TIMESTAMP, timestamp);
+    }
+
+    private long getTimestamp(final Map<String, Object> offsetValue) {
+
+        if (offsetValue == null) {
+            return 0;
+        }
+
+        final Long value = (Long) offsetValue.get(TIMESTAMP);
+        return (value != null) ? value : 0;
     }
 }
