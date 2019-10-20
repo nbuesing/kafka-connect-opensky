@@ -7,6 +7,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @ToString
+@EqualsAndHashCode
 public class BoundingBox {
     private Double minLatitude;
     private Double maxLatitude;

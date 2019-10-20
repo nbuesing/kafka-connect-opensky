@@ -1,8 +1,8 @@
 package com.github.nbuesing.kafka.connect.opensky;
 
 
+import com.github.nbuesing.kafka.connect.opensky.util.ListUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.utils.AppInfoParser;
 import org.apache.kafka.connect.connector.Task;
@@ -46,8 +46,8 @@ public class OpenSkySourceConnector extends SourceConnector {
 
         final int tasks = Math.min(maxTasks, boundingBoxes.size());
 
-//        for (List<String> workUnit : Iterables.partition(boundingBoxes, tasks)) {
         for (List<String> workUnit : ListUtils.partition(boundingBoxes, tasks)) {
+
             Map<String, String> config = new HashMap<>(settings);
 
             if (!workUnit.isEmpty()) {

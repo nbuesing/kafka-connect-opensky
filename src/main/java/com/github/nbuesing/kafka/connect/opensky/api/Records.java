@@ -12,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class Records {
-    private Integer time;
+    private Long time;
     private List<Record> states;
 }

@@ -113,6 +113,9 @@ public class OpenSkySourceTask extends SourceTask {
 
                 final String icao24 = vector.getIcao24();
 
+                // skip sending aircraft if it is missing lat/ong information or its last contact timestamp is
+                // older than the timestamp from the previous fetch.
+
                 if (vector.getLastContact() > lastTimestamp
                         && vector.getLatitude() != null
                         && vector.getLongitude() != null
@@ -187,7 +190,7 @@ public class OpenSkySourceTask extends SourceTask {
         return Collections.singletonMap(BOUNDING_BOX, BoundingBoxUtil.toString(boundingBox));
     }
 
-    private Map<String, Object> offsetValue(final Integer timestamp) {
+    private Map<String, Object> offsetValue(final Long timestamp) {
         return Collections.singletonMap(TIMESTAMP, timestamp);
     }
 
