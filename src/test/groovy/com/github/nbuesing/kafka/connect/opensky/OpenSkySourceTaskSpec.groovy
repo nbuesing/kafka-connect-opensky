@@ -167,4 +167,48 @@ class OpenSkySourceTaskSpec extends Specification {
 
     }
 
+    def 'start() - bad data'() {
+
+        setup:
+
+        Map<String, String> offset = task.offsetKey(BoundingBoxUtil.toBoundingBox('-90 90 -180 180'))
+
+        OffsetStorageReader offsetStorageReader = Mock()
+        SourceTaskContext context = Mock()
+
+        task.context = context
+
+        api.stubFor(
+                get(urlMatching('/states/all.*'))
+                        .willReturn(aResponse().withBody('''
+                            { 
+                              "time": "1570243170",
+                              "states": [
+                                ["ab1644","UAL841","United States",1570243169,1570243169,null,40.2516,10050.78,false,246.08,177.84,1.63,null,10568.94,"5102",false,0],
+                                ["ac96b8","AAL1305 ","United States",1570243168,1570243169,-89.3563,32.4248,11582.4,false,236.75,95.61,0,null,12214.86,null,false,0]
+                              ]
+                            }
+                            '''
+                        ))
+        )
+
+        when:
+        task.start([
+                topic        : 'bar',
+                interval     : '1',
+                'opensky.url': 'http://localhost:9999'
+        ])
+
+        List<SourceRecord> records = task.poll()
+
+        task.stop()
+
+        then:
+        assert records.size() == 1
+        context.offsetStorageReader() >> offsetStorageReader
+        offsetStorageReader.offset(offset) >> null
+        0 * _
+
+    }
+
 }
