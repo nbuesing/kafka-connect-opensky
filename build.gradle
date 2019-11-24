@@ -64,7 +64,6 @@ task connectStandalone(type: Copy) {
 
 
 distributions {
-
     main {
         baseName = "nbuesing-${project.name}"
         contents {

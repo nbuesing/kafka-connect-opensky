@@ -1,6 +1,6 @@
 package com.github.nbuesing.kafka.connect.opensky
 
-import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil
+
 import spock.lang.Specification
 
 class OpenSkySourceConnectorSpec extends Specification {

@@ -3,28 +3,34 @@ version: '3.7'
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.3.0
+    image: confluentinc/cp-zookeeper:5.3.1
     hostname: zookeeper
+    ports:
+      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
   broker:
-    image: confluentinc/cp-enterprise-kafka:5.3.0
+    image: confluentinc/cp-enterprise-kafka:5.3.1
     hostname: broker
     depends_on:
       - zookeeper
+    ports:
+      - "19092:19092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:19092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.3.0
+    image: confluentinc/cp-schema-registry:5.3.1
     hostname: schema-registry
+    ports: 
+      - "8081:8081"
     depends_on:
       - zookeeper
       - broker
@@ -36,7 +42,7 @@ services:
       - ./schema-registry/log4j.properties:/etc/schema-registry/quiet-logging.properties
         
   connect:
-    image: nbuesing/kafka-connect-opensky:1.0.0
+#    image: nbuesing/kafka-connect-opensky:1.0.0
     build:
       context: .
       dockerfile: Dockerfile
@@ -69,30 +75,63 @@ services:
       CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
 
   ksql-server:
-    image: confluentinc/cp-ksql-server:5.3.0
+    image: confluentinc/cp-ksql-server:5.4.0-dist-1
+    #image: confluentinc/cp-ksql-server:5.3.1
     hostname: ksql-server
     depends_on:
       - broker
       - connect
-    ports:
-      - "8088:8088"
+#    ports:
+#      - "8088:8088"
+    volumes:
+      - ./ext:/etc/ksql/ext
     environment:
-      KSQL_CONFIG_DIR: "/etc/ksql"
+      KSQL_CONFIG_DIR: /etc/ksql
+      KSQL_KSQL_EXTENSION_DIR: "/etc/ksql/ext"
+      KSQL_UDFS_ENABLED: "true"
       KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties"
+      KSQL_LOG4J_ROOT_LOGLEVEL: DEBUG
+      KSQL_TOOLS_LOG4J_LOGLEVEL: DEBUG
       KSQL_BOOTSTRAP_SERVERS: "broker:9092"
       KSQL_HOST_NAME: ksql-server
       KSQL_APPLICATION_ID: "ksql-server"
       KSQL_LISTENERS: "http://0.0.0.0:8088"
       KSQL_CACHE_MAX_BYTES_BUFFERING: 0
       KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-#      KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
-#      KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+      KSQL_PRODUCER_INTERCEPTOR_CLASSES: ""
+      KSQL_CONSUMER_INTERCEPTOR_CLASSES: ""
 
   ksql-cli:
-    image: confluentinc/cp-ksql-cli:5.3.0
+    image: confluentinc/cp-ksql-cli:5.4.0-dist-1
+    #image: confluentinc/cp-ksql-cli:5.3.1
     depends_on:
       - broker
       - ksql-server
     entrypoint: /bin/sh
     tty: true
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      xpack.security.enabled: "false"
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes: 
+      - ./data/container_data/elasticserarch:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.4.2
+    container_name: kibana
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    environment:
+      xpack.security.enabled: "false"
+      discovery.type: "single-node"
+
 

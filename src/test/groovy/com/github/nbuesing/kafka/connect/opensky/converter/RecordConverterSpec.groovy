@@ -36,8 +36,8 @@ class RecordConverterSpec extends Specification {
         then:
         assert struct.get('id') == 'ICAO24'
         assert struct.get('callsign') == 'CALLSIGN'
-        assert (struct.get('location') as Struct).get('latitude') == 81.23
-        assert (struct.get('location') as Struct).get('longitude') == 145.67
+        assert (struct.get('location') as Struct).get('lat') == 81.23
+        assert (struct.get('location') as Struct).get('lon') == 145.67
         assert struct.get('originCountry') == 'USA'
         assert struct.get('barometricAltitude') == 32.1
         assert struct.get('geometricAltitude') == 43.2
@@ -65,8 +65,8 @@ class RecordConverterSpec extends Specification {
         then:
         assert struct.get('id') == 'ICAO24'
         assert struct.get('callsign') == null
-        assert (struct.get('location') as Struct).get('latitude') == 12.34
-        assert (struct.get('location') as Struct).get('longitude') == 167.89
+        assert (struct.get('location') as Struct).get('lat') == 12.34
+        assert (struct.get('location') as Struct).get('lon') == 167.89
         assert struct.get('originCountry') == null
         assert struct.get('barometricAltitude') == null
         assert struct.get('geometricAltitude') == null

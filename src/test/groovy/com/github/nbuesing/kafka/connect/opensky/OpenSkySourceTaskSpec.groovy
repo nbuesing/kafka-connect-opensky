@@ -1,6 +1,6 @@
 package com.github.nbuesing.kafka.connect.opensky
 
-import com.github.nbuesing.kafka.connect.opensky.api.BoundingBox
+
 import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import com.github.tomakehurst.wiremock.stubbing.Scenario
@@ -12,10 +12,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import static com.github.tomakehurst.wiremock.client.WireMock.get
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import static com.github.tomakehurst.wiremock.client.WireMock.*
 
 @Unroll
 class OpenSkySourceTaskSpec extends Specification {
@@ -72,10 +69,10 @@ class OpenSkySourceTaskSpec extends Specification {
         ]
 
         where:
-        url | username | password
-        null | null | null
-        'http://localhost:9999/' | 'U' | 'P'
-        'http://localhost:9999' | 'U' | 'P'
+        url                      | username | password
+        null                     | null     | null
+        'http://localhost:9999/' | 'U'      | 'P'
+        'http://localhost:9999'  | 'U'      | 'P'
     }
 
 
