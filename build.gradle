@@ -58,14 +58,18 @@ jacocoTestReport {
 
 task connectStandalone(type: Copy) {
     from(configurations.runtimeClasspath)
-    from("build/libs/opensky-source-connector.jar")
+    from("build/libs/kafka-connect-opensky.jar")
     into("build/connect/opensky") 
 }
 
 
+jar {
+    baseName = 'kafka-connect-opensky'
+}
+
 distributions {
     main {
-        baseName = "nbuesing-${project.name}"
+        baseName = "kafka-connect-opensky"
         contents {
             from("docs/manifest.json") {
                 //filter { line -> line.toUpperCase() }
