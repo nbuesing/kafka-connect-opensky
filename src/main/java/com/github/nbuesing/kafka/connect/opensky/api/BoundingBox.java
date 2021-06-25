@@ -9,8 +9,8 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 public class BoundingBox {
-    private Double minLatitude;
-    private Double maxLatitude;
-    private Double minLongitude;
-    private Double maxLongitude;
+    private final Double minLatitude;
+    private final Double maxLatitude;
+    private final Double minLongitude;
+    private final Double maxLongitude;
 }

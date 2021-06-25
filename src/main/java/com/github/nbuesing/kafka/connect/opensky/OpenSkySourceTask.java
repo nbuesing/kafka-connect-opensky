@@ -72,7 +72,8 @@ public class OpenSkySourceTask extends SourceTask {
                 }
         );
 
-        openSky = new OpenSky(url, username, password);
+
+        openSky = new OpenSky(url, username, password, config.getCallTimeout(), config.getConnectTimeout(), config.getReadTimeout());
 
         boundingBoxes = config.getBoundingBoxes();
     }

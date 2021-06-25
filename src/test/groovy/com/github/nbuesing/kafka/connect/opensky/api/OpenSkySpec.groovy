@@ -31,7 +31,7 @@ class OpenSkySpec extends Specification {
                 '''
                         )))
 
-        OpenSky openSky = new OpenSky("http://localhost:9999", username, password)
+        OpenSky openSky = new OpenSky("http://localhost:9999", username, password, Optional.empty(), Optional.empty(), Optional.empty())
 
         when:
         Records records = openSky.getAircrafts(BoundingBoxUtil.toBoundingBox('-89 90 -180 180'));
@@ -64,7 +64,7 @@ class OpenSkySpec extends Specification {
                 '''
                         )))
 
-        OpenSky openSky = new OpenSky("http://localhost:9999", null, null)
+        OpenSky openSky = new OpenSky("http://localhost:9999", null, null, Optional.empty(), Optional.empty(), Optional.empty())
 
         when:
         Records records = openSky.getAircrafts(boundingBox);

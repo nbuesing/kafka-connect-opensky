@@ -1,6 +1,9 @@
 package com.github.nbuesing.kafka.connect.opensky.api;
 
 import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -9,8 +12,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-
-import java.io.IOException;
 
 /**
  * https://opensky-network.org/apidoc/rest.html
@@ -50,21 +51,25 @@ public class OpenSky {
 
     }
 
-    public OpenSky(final String url, final String username, final String password) {
+    private OkHttpClient create(
+            final String username,
+            final String password,
+            final Optional<Duration> callTimeout,
+            final Optional<Duration> connectTimeout,
+            final Optional<Duration> readTimeout
+    ) {
 
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl(StringUtils.isNotEmpty(url) ? url : DEFAULT_URL)
-                .addConverterFactory(JacksonConverterFactory.create());
+        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         if (username != null) {
-            builder.client(new OkHttpClient.Builder()
-                    .addInterceptor(new BasicAuthInterceptor(username, password))
-                    .build()
-            );
+            builder.addInterceptor(new BasicAuthInterceptor(username, password));
         }
 
-//        builder.client(new OkHttpClient.Builder()
-//                .addInterceptor(new Interceptor() {
+        callTimeout.ifPresent(builder::callTimeout);
+        connectTimeout.ifPresent(builder::connectTimeout);
+        readTimeout.ifPresent(builder::readTimeout);
+
+        //                .addInterceptor(new Interceptor() {
 //                    @Override
 //                    public Response intercept(Chain chain) throws IOException {
 //
@@ -80,9 +85,23 @@ public class OpenSky {
 //                        }
 //                    }
 //                })
-//                .build());
 
-        retrofit = builder.build();
+        return builder.build();
+    }
+
+    public OpenSky(
+            final String url,
+            final String username,
+            final String password,
+            final Optional<Duration> callTimeout,
+            final Optional<Duration> connectTimeout,
+            final Optional<Duration> readTimeout
+    ) {
+        retrofit = new Retrofit.Builder()
+                .baseUrl(StringUtils.isNotEmpty(url) ? url : DEFAULT_URL)
+                .addConverterFactory(JacksonConverterFactory.create())
+                .client(create(username, password, callTimeout, connectTimeout, readTimeout))
+                .build();
 
         api = retrofit.create(RestApi.class);
     }
