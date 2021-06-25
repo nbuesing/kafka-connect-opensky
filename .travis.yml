@@ -3,5 +3,5 @@ jdk:
   - openjdk8
 notifications:
   email:
-    - neil.buesing@objectpartners.com
+    - neil@buesing.dev
 
