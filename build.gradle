@@ -13,7 +13,7 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven {
-        url "http://packages.confluent.io/maven/"
+        url "https://packages.confluent.io/maven/"
     }
 }
 
@@ -21,16 +21,21 @@ dependencies {
 
     compileOnly group: 'org.apache.kafka', name: 'connect-api', version: kafka_version
 
+    implementation group: 'com.fasterxml.jackson.core', name:'jackson-databind', version: '2.11.4'
+    implementation group: 'com.fasterxml.jackson.core', name:'jackson-annotations', version: '2.11.4'
+    implementation group: 'com.fasterxml.jackson.core', name:'jackson-core', version: '2.11.4'
+
     implementation group: 'org.apache.commons', name: 'commons-text', version: commons_text_version
     implementation group: 'com.squareup.retrofit2', name: 'retrofit', version: retrofit2_version
     implementation group: 'com.squareup.retrofit2', name: 'converter-jackson', version: retrofit2_version
+
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
 
     testImplementation group: 'junit', name: 'junit', version: junit_version
     testImplementation group: 'org.spockframework', name: 'spock-core', version: spockframework_version
-    testImplementation group: 'com.github.tomakehurst', name: 'wiremock', version: wiremock_version
+    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: wiremock_version
 
     testImplementation group: 'org.apache.kafka', name: 'connect-api', version: kafka_version
 }
@@ -49,8 +54,8 @@ jacoco {
 
 jacocoTestReport {
     reports {
-        xml.enabled = false
-        csv.enabled = false
+        xml.required = false
+        csv.required = false
         html.destination file("${buildDir}/reports/jacoco/html")
     }
 }
@@ -63,12 +68,11 @@ task connectStandalone(type: Copy) {
 
 
 jar {
-    baseName = 'kafka-connect-opensky'
+    archiveBaseName = 'kafka-connect-opensky'
 }
 
 distributions {
     main {
-        baseName = "kafka-connect-opensky"
         contents {
             from("docs/manifest.json") {
                 //filter { line -> line.toUpperCase() }
