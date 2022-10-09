@@ -1,8 +1,10 @@
-FROM confluentinc/cp-kafka-connect:5.3.1
+FROM confluentinc/cp-kafka-connect:7.2.1
 
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
 
 COPY build/distributions/kafka-connect-opensky.zip /hub-downloads/
+
+USER root
 
 RUN \
     mkdir -p /spooldir/input && \
@@ -11,15 +13,8 @@ RUN \
 
 COPY airlines.csv /spooldir/input
 
-#    rm -fr /usr/share/java/kafka-connect-elasticsearch && \
-
 RUN \
-    rm -fr /usr/share/java/kafka-connect-activemq && \
-    rm -fr /usr/share/java/kafka-connect-ibmmq && \
-    rm -fr /usr/share/java/kafka-connect-jdbc && \
-    rm -fr /usr/share/java/kafka-connect-jms && \
-    rm -fr /usr/share/java/kafka-connect-s3 && \
-    confluent-hub install --no-prompt /hub-downloads/kafka-connect-opensky.zip
+    confluent-hub install --no-prompt /hub-downloads/kafka-connect-opensky.zip && \
+    confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:latest
 
-#    confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:latest
-
+USER appuser

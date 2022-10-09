@@ -1,23 +1,48 @@
----
-version: '3.7'
+
+volumes:
+  zk: {}
+  zk_log: {}
+  bk: {}
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.3.1
+    image: confluentinc/cp-zookeeper:7.2.1
     hostname: zookeeper
     ports:
       - "2181:2181"
+    volumes:
+      - zk:/var/lib/zookeeper/data
+      - zk_log:/var/lib/zookeeper/log
+    healthcheck:
+      test: echo ruok | nc -w 2 localhost 2181 | grep imok
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 3
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok,stat"
 
   broker:
-    image: confluentinc/cp-enterprise-kafka:5.3.1
+    image: confluentinc/cp-enterprise-kafka:7.2.1
     hostname: broker
     depends_on:
       - zookeeper
     ports:
       - "19092:19092"
+    volumes:
+      - bk:/var/lib/kafka/data
+    stop_grace_period: 120s
+    healthcheck:
+      test: nc -z localhost 9092 || exit 1
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
@@ -27,7 +52,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.3.1
+    image: confluentinc/cp-schema-registry:7.2.1
     hostname: schema-registry
     ports: 
       - "8081:8081"
@@ -75,8 +100,7 @@ services:
       CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
 
   ksql-server:
-    image: confluentinc/cp-ksql-server:5.4.0-dist-1
-    #image: confluentinc/cp-ksql-server:5.3.1
+    image: confluentinc/cp-ksqldb-server:7.2.1
     hostname: ksql-server
     depends_on:
       - broker
@@ -102,8 +126,7 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: ""
 
   ksql-cli:
-    image: confluentinc/cp-ksql-cli:5.4.0-dist-1
-    #image: confluentinc/cp-ksql-cli:5.3.1
+    image: confluentinc/cp-ksqldb-cli:7.2.1
     depends_on:
       - broker
       - ksql-server
@@ -111,7 +134,7 @@ services:
     tty: true
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+    image: elasticsearch:8.4.3
     container_name: elasticsearch
     ports:
       - 9200:9200
@@ -124,7 +147,7 @@ services:
       - ./data/container_data/elasticserarch:/usr/share/elasticsearch/data
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.4.2
+    image: kibana:8.4.3
     container_name: kibana
     depends_on:
       - elasticsearch

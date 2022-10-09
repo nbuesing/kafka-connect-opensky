@@ -17,18 +17,23 @@ repositories {
     }
 }
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+
 dependencies {
 
     compileOnly group: 'org.apache.kafka', name: 'connect-api', version: kafka_version
 
-    implementation group: 'com.fasterxml.jackson.core', name:'jackson-databind', version: '2.11.4'
-    implementation group: 'com.fasterxml.jackson.core', name:'jackson-annotations', version: '2.11.4'
-    implementation group: 'com.fasterxml.jackson.core', name:'jackson-core', version: '2.11.4'
+    implementation group: 'com.fasterxml.jackson.core', name:'jackson-databind', version: jackson_version
+    implementation group: 'com.fasterxml.jackson.core', name:'jackson-annotations', version: jackson_version
+    implementation group: 'com.fasterxml.jackson.core', name:'jackson-core', version: jackson_version
 
     implementation group: 'org.apache.commons', name: 'commons-text', version: commons_text_version
     implementation group: 'com.squareup.retrofit2', name: 'retrofit', version: retrofit2_version
     implementation group: 'com.squareup.retrofit2', name: 'converter-jackson', version: retrofit2_version
 
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
