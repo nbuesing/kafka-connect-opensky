@@ -1,17 +1,26 @@
 package com.github.nbuesing.kafka.connect.opensky.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nbuesing.kafka.connect.opensky.util.BoundingBoxUtil;
+import feign.Feign;
+import feign.Param;
+import feign.Request;
+import feign.RequestLine;
+import feign.RequestTemplate;
+import feign.auth.BasicAuthRequestInterceptor;
+import feign.codec.EncodeException;
+import feign.codec.Encoder;
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
 
 /**
  * https://opensky-network.org/apidoc/rest.html
@@ -29,90 +38,61 @@ import retrofit2.http.Query;
 @Slf4j
 public class OpenSky {
 
-    private static final String DEFAULT_URL = "https://opensky-network.org/api/";
+  private static final String DEFAULT_URL = "https://opensky-network.org/api/";
 
-    private Retrofit retrofit;
+  private RestApi feign;
 
-    private RestApi api;
+  public interface RestApi {
+    @RequestLine("GET /states/all")
+    Records getAll();
 
-    public interface RestApi {
+    @RequestLine("GET /states/all?lamin={lamin}&lamax={lamax}&lomin={lomin}&lomax={lomax}")
+    Records getAll(
+            @Param("lamin") Double minLatitude,
+            @Param("lamax") Double maxLatitude,
+            @Param("lomin") Double minLongitude,
+            @Param("lomax") Double maxLongitude
+    );
+  }
 
-        @GET("states/all")
-        Call<Records> getAll();
+  public OpenSky(
+          final String url,
+          final String username,
+          final String password,
+          final Optional<Duration> callTimeout,
+          final Optional<Duration> connectTimeout,
+          final Optional<Duration> readTimeout
+  ) {
 
-        // time
-        @GET("states/all")
-        Call<Records> getAll(
-                @Query("lamin") Double minLatitude,
-                @Query("lamax") Double maxLatitude,
-                @Query("lomin") Double minLongitude,
-                @Query("lomax") Double maxLongitude
-        );
+//            .client(create(username, password, callTimeout, connectTimeout, readTimeout))
 
+    final ObjectMapper objectMapper = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    final Feign.Builder builder = Feign.builder()
+            .encoder(new JacksonEncoder(objectMapper))
+            .decoder(new JacksonDecoder(objectMapper));
+
+    if (username != null && password != null) {
+      builder.requestInterceptor(new BasicAuthRequestInterceptor(username, password));
     }
 
-    private OkHttpClient create(
-            final String username,
-            final String password,
-            final Optional<Duration> callTimeout,
-            final Optional<Duration> connectTimeout,
-            final Optional<Duration> readTimeout
-    ) {
-
-        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
-
-        if (username != null) {
-            builder.addInterceptor(new BasicAuthInterceptor(username, password));
-        }
-
-        callTimeout.ifPresent(builder::callTimeout);
-        connectTimeout.ifPresent(builder::connectTimeout);
-        readTimeout.ifPresent(builder::readTimeout);
-
-        //                .addInterceptor(new Interceptor() {
-//                    @Override
-//                    public Response intercept(Chain chain) throws IOException {
-//
-//                        try {
-//                            Response response = chain.proceed(chain.request());
-//
-//                            System.out.println(">>>");
-//                            System.out.println(response.body().string());
-//                            return response;
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                            return null;
-//                        }
-//                    }
-//                })
-
-        return builder.build();
+    if (connectTimeout.isPresent() && readTimeout.isPresent()) {
+      builder.options(new Request.Options(connectTimeout.get(), readTimeout.get(), true));
     }
 
-    public OpenSky(
-            final String url,
-            final String username,
-            final String password,
-            final Optional<Duration> callTimeout,
-            final Optional<Duration> connectTimeout,
-            final Optional<Duration> readTimeout
-    ) {
-        retrofit = new Retrofit.Builder()
-                .baseUrl(StringUtils.isNotEmpty(url) ? url : DEFAULT_URL)
-                .addConverterFactory(JacksonConverterFactory.create())
-                .client(create(username, password, callTimeout, connectTimeout, readTimeout))
-                .build();
+    feign = builder.target(RestApi.class, StringUtils.isNotEmpty(url) ? url : DEFAULT_URL);
 
-        api = retrofit.create(RestApi.class);
-    }
+  }
 
-    public Records getAircrafts(final BoundingBox bb) throws IOException {
-        if (bb == null || BoundingBoxUtil.isWorld(bb)) {
-            log.info("getAll");
-            return api.getAll().execute().body();
-        } else {
-            log.info("getAll, bb={}", bb);
-            return api.getAll(bb.getMinLatitude(), bb.getMaxLatitude(), bb.getMinLongitude(), bb.getMaxLongitude()).execute().body();
-        }
+  public Records getAircrafts(final BoundingBox bb) throws IOException {
+    if (bb == null || BoundingBoxUtil.isWorld(bb)) {
+      log.info("getAll");
+      return feign.getAll();
+    } else {
+      log.info("getAll, bb={}", bb);
+      return feign.getAll(bb.getMinLatitude(), bb.getMaxLatitude(), bb.getMinLongitude(), bb.getMaxLongitude());
     }
+  }
 }

@@ -21,7 +21,7 @@ public class OpenSkyTest {
   @RegisterExtension
   static WireMockExtension api = WireMockExtension.newInstance().options(wireMockConfig().port(9999)).build();
 
-  @ParameterizedTest
+  @ParameterizedTest(name="getByBoundingBox user={0}, password={1}")
   @CsvSource({",", "foo,bar"})
   void getByBoundingBox(String username, String password) throws IOException {
 

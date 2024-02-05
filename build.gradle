@@ -29,17 +29,16 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name:'jackson-core', version: jackson_version
 
     implementation group: 'org.apache.commons', name: 'commons-text', version: commons_text_version
-    implementation group: 'com.squareup.retrofit2', name: 'retrofit', version: retrofit2_version
-    implementation group: 'com.squareup.retrofit2', name: 'converter-jackson', version: retrofit2_version
+
+    implementation group: 'io.github.openfeign', name: 'feign-core', version: feign_version
+    implementation group: 'io.github.openfeign', name: 'feign-jackson', version: feign_version
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
 
-//    testImplementation group: 'junit', name: 'junit', version: junit_version
-//    testImplementation group: 'org.spockframework', name: 'spock-core', version: spockframework_version
-    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: wiremock_version
+    testImplementation group: 'com.github.tomakehurst', name: 'wiremock', version: wiremock_version
 
     testImplementation group: 'org.mockito', name: 'mockito-core', version: mockito_version
 
