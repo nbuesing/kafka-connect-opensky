@@ -36,7 +36,7 @@ public class OpenSkyTest {
                             "}")
                     ));
 
-    OpenSky openSky = new OpenSky("http://localhost:9999", username, password, Optional.empty(), Optional.empty(), Optional.empty());
+    OpenSky openSky = new OpenSky("http://localhost:9999", username, password, Optional.empty(), Optional.empty());
 
     Records records = openSky.getAircrafts(BoundingBoxUtil.toBoundingBox("-89 90 -180 180"));
 
@@ -63,7 +63,7 @@ public class OpenSkyTest {
                             "}")
                     ));
 
-    OpenSky openSky = new OpenSky("http://localhost:9999", null, null, Optional.empty(), Optional.empty(), Optional.empty());
+    OpenSky openSky = new OpenSky("http://localhost:9999", null, null, Optional.empty(), Optional.empty());
 
     Records records = openSky.getAircrafts(BoundingBoxUtil.toBoundingBox("-90 90 -180 180"));
 

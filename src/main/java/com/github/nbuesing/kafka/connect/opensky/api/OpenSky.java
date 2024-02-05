@@ -59,7 +59,6 @@ public class OpenSky {
           final String url,
           final String username,
           final String password,
-          final Optional<Duration> callTimeout,
           final Optional<Duration> connectTimeout,
           final Optional<Duration> readTimeout
   ) {

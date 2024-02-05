@@ -54,9 +54,6 @@ public class OpenSkySourceConnectorConfig extends AbstractConfig {
     private static final String OPENSKY_CONNECT_TIMEOUT_DOC = "opensky API connect timeout setting";
 //    private static final String OPENSKY_CONNECT_TIMEOUT_DISPLAY = "TBD";
 
-    public static final String OPENSKY_CALL_TIMEOUT_CONF = "opensky.timeout.call";
-    private static final String OPENSKY_CALL_TIMEOUT_DOC = "opensky API call timeout setting";
-//    private static final String OPENSKY_CALL_TIMEOUT_DISPLAY = "TBD";
 
     public OpenSkySourceConnectorConfig(final Map<String, String> parsedConfig) {
         super(conf(), parsedConfig);
@@ -82,16 +79,13 @@ public class OpenSkySourceConnectorConfig extends AbstractConfig {
         return DurationParser.parse(getString(config));
     }
 
-    public Optional<Duration> getCallTimeout() {
-        return getDuration(OPENSKY_CONNECT_TIMEOUT_CONF);
-    }
 
     public Optional<Duration> getConnectTimeout() {
         return getDuration(OPENSKY_CONNECT_TIMEOUT_CONF);
     }
 
     public Optional<Duration> getReadTimeout() {
-        return getDuration(OPENSKY_CONNECT_TIMEOUT_CONF);
+        return getDuration(OPENSKY_READ_TIMEOUT_CONF);
     }
 
     public Optional<String> getOpenskyUsername() {
@@ -109,7 +103,6 @@ public class OpenSkySourceConnectorConfig extends AbstractConfig {
                 .define(INTERVAL_CONF, ConfigDef.Type.LONG, INTERVAL_DEFAULT, ConfigDef.Range.atLeast(1), ConfigDef.Importance.MEDIUM, INTERVAL_DOC)
                 .define(BOUNDING_BOXES_CONF, ConfigDef.Type.LIST, "-90 90 -180 180", Validators.validBoundingBoxes, ConfigDef.Importance.MEDIUM, BOUNDING_BOXES_CONF)
                 .define(OPENSKY_URL_CONF, ConfigDef.Type.STRING, OPENSKY_URL_DEFAULT, ConfigDef.Importance.LOW, OPENSKY_URL_DOC)
-                .define(OPENSKY_CALL_TIMEOUT_CONF, ConfigDef.Type.STRING, null, ConfigDef.Importance.LOW, OPENSKY_CALL_TIMEOUT_DOC)
                 .define(OPENSKY_CONNECT_TIMEOUT_CONF, ConfigDef.Type.STRING, null, ConfigDef.Importance.LOW, OPENSKY_CONNECT_TIMEOUT_DOC)
                 .define(OPENSKY_READ_TIMEOUT_CONF, ConfigDef.Type.STRING, null, ConfigDef.Importance.LOW, OPENSKY_READ_TIMEOUT_DOC)
                 .define(OPENSKY_USERNAME_CONF, ConfigDef.Type.STRING, null, ConfigDef.Importance.LOW, OPENSKY_USERNAME_DOC)
