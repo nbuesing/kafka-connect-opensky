@@ -44,6 +44,8 @@ public class OpenSkyTest {
     assertEquals(1570243180, records.getTime());
     assertEquals("ab1644", records.getStates().get(0).getIcao24());
     assertEquals("UAL841", records.getStates().get(0).getCallSign());
+
+
   }
 
 
@@ -69,6 +71,8 @@ public class OpenSkyTest {
     assertEquals(1570243180, records.getTime());
     assertEquals("ab1644", records.getStates().get(0).getIcao24());
     assertEquals("UAL841", records.getStates().get(0).getCallSign());
+
+    assertEquals(2, openSky.getAircrafts(null).getStates().size());
   }
 
 
