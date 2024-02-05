@@ -1,0 +1,22 @@
+{
+  "connector.class": "com.github.nbuesing.kafka.connect.opensky.OpenSkySourceConnector",
+
+  "tasks.max": "1",
+
+  "topic": "flights_json2",
+
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter.schemas.enable": "false",
+
+  "interval": "20",
+
+  "opensky.timeout.connect": "30s",
+  "opensky.timeout.read": "30s",
+
+  "transforms": "flatten,rename",
+  "transforms.flatten.type": "org.apache.kafka.connect.transforms.Flatten$Value",
+  "transforms.flatten.delimiter": "_",
+  "transforms.rename.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+  "transforms.rename.renames": "location_lat:latitude,location_lon:longitude"
+}
