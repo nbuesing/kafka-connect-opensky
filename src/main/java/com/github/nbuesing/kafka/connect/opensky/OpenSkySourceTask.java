@@ -204,4 +204,32 @@ public class OpenSkySourceTask extends SourceTask {
         final Long value = (Long) offsetValue.get(TIMESTAMP);
         return (value != null) ? value : 0;
     }
+
+    String getTopic() {
+        return topic;
+    }
+
+    long getInterval() {
+        return interval;
+    }
+
+    String getUrl() {
+        return url;
+    }
+
+    String getUsername() {
+        return username;
+    }
+
+    String getPassword() {
+        return password;
+    }
+
+    BlockingQueue<SourceRecord> getQueue() {
+        return queue;
+    }
+
+    List<BoundingBox> getBoundingBoxes() {
+        return boundingBoxes;
+    }
 }
